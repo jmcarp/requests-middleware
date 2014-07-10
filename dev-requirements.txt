@@ -1,0 +1,6 @@
+-r requirements.txt
+tox
+mock
+pytest
+httpretty
+pytest_httpretty
