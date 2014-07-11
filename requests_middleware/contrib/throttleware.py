@@ -66,7 +66,7 @@ class RequestsPerHourThrottler(RequestPerTimeThrottler):
         super(RequestsPerHourThrottler, self).__init__(count, resetter)
 
 
-class ThrottleMiddlware(BaseMiddleware):
+class ThrottleMiddleware(BaseMiddleware):
 
     def __init__(self, throttler):
         self.throttler = throttler

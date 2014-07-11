@@ -28,7 +28,7 @@ def make_session_fixture(throttler):
     def fixture():
         session = requests.Session()
         adapter = MiddlewareHTTPAdapter()
-        throttle_middleware = throttleware.ThrottleMiddlware(throttler)
+        throttle_middleware = throttleware.ThrottleMiddleware(throttler)
         adapter.register(throttle_middleware)
         session.mount('http://', adapter)
         session.mount('https://', adapter)
