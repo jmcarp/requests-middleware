@@ -27,7 +27,10 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
         self.middlewares.append(middleware)
 
     def init_poolmanager(self, connections, maxsize, block=False):
-        """
+        """Create the poolmanager. If any middleware in the stack returns a
+        truthy value from its `before_init_poolmanager` method, short-circuit
+        and return that value; else delegate to
+        `HTTPAdapter::init_poolmanager`.
 
         """
         for middleware in self.middlewares:
@@ -79,7 +82,10 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
 class BaseMiddleware(object):
 
     def before_init_poolmanager(self, connections, maxsize, block=False):
-        """Optionally overrides initialization of the pool manager.
+        """Called before `HTTPAdapter::init_poolmanager`. If a truthy value is
+        returned, :class:`MiddlewareHTTPAdapter <MiddlewareHTTPAdapter>` will
+        short-circuit the remaining middlewares and `HTTPAdapter::send`, using
+        the returned value instead.
 
         :returns: `PoolManager` or ``None``
 
@@ -87,23 +93,27 @@ class BaseMiddleware(object):
         pass
 
     def before_send(self, request, *args, **kwargs):
-        """
+        """Triggered before calling `HTTPAdapter::send`. If a truthy value is
+        returned, :class:`MiddlewareHTTPAdapter <MiddlewareHTTPAdapter>` will
+        short-circuit the remaining middlewares and `HTTPAdapter::send`, using
+        the returned value instead.
 
         :param request: The :class:`PreparedRequest <PreparedRequest>` being
             sent.
-        :returns: The :class:`Response <Response>` object.
+        :returns: The :class:`Response <Response>` object or ``None``.
 
         """
         pass
 
     def after_build_response(self, req, resp, response):
-        """
+        """Triggered after calling `HTTPAdapter::build_response`. Optionally
+        modify the returned `Response` object.
 
         :param req: The :class:`PreparedRequest <PreparedRequest>` used to
             generate the response.
         :param resp: The urllib3 response object.
         :param response: The :class:`Response <Response>` object.
-        :returns: The potentially modified :class:`Response <Response>` object.
+        :returns: The potentially modified `Response` object.
 
         """
         return response
