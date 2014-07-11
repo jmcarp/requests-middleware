@@ -1,7 +1,13 @@
 requests-middleware
 ===================
 
-TL;DR: *requests-middleware* is a custom transport adapter that allows simple
+.. image:: https://badge.fury.io/py/requests-middleware.png
+    :target: http://badge.fury.io/py/requests-middleware
+
+.. image:: https://travis-ci.org/jmcarp/requests-middleware.png?branch=master
+    :target: https://travis-ci.org/jmcarp/requests-middleware
+
+*TL;DR*: **requests-middleware** is a custom transport adapter that allows simple
 composition of HTTP interactions.
 
 The `python-requests`_ library makes excellent use of transport adapters to
@@ -14,7 +20,7 @@ session? What if you want HTTP caching *and* rate-limiting? Requests only
 uses one adapter per URL. You could write a new
 `CachingRateLimitingHTTPAdapter`, but that's probably not the best solution.
 
-*requests-middleware* is an attempt to preserve the modularity of adapters,
+**requests-middleware** is an effort to preserve the modularity of adapters,
 while allowing simple composition of multiple types of interaction. Want to
 use HTTP caching, respect robots.txt files, and limit your application to
 10 requests per hour? No problem!
