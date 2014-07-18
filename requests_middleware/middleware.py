@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
 
 
 class MiddlewareHTTPAdapter(HTTPAdapter):
@@ -27,21 +28,28 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
         self.middlewares.append(middleware)
 
     def init_poolmanager(self, connections, maxsize, block=False):
-        """Create the poolmanager. If any middleware in the stack returns a
-        truthy value from its `before_init_poolmanager` method, short-circuit
-        and return that value; else delegate to
-        `HTTPAdapter::init_poolmanager`.
+        """Assemble keyword arguments to be passed to `PoolManager`.
+        Middlewares are called in reverse order, so if multiple middlewares
+        define conflicting arguments, the higher-priority middleware will take
+        precedence. Note: Arguments are passed directly to `PoolManager` and
+        not to the superclass `init_poolmanager` because the superclass method
+        does not currently accept **kwargs.
 
         """
-        for middleware in self.middlewares:
+        kwargs = {}
+        for middleware in self.middlewares[::-1]:
             value = middleware.before_init_poolmanager(
                 connections, maxsize, block
             )
-            if value:
-                self.poolmanager = value
-                return
-        super(MiddlewareHTTPAdapter, self).init_poolmanager(
-            connections, maxsize, block
+            kwargs.update(value or {})
+
+        self._pool_connections = connections
+        self._pool_maxsize = maxsize
+        self._pool_block = block
+
+        self.poolmanager = PoolManager(
+            num_pools=connections, maxsize=maxsize, block=block,
+            **kwargs
         )
 
     def send(self, request, *args, **kwargs):
@@ -82,21 +90,19 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
 class BaseMiddleware(object):
 
     def before_init_poolmanager(self, connections, maxsize, block=False):
-        """Called before `HTTPAdapter::init_poolmanager`. If a truthy value is
-        returned, :class:`MiddlewareHTTPAdapter <MiddlewareHTTPAdapter>` will
-        short-circuit the remaining middlewares and `HTTPAdapter::send`, using
-        the returned value instead.
+        """Called before `HTTPAdapter::init_poolmanager`. Optionally return a
+        dictionary of keyword arguments to `PoolManager`.
 
-        :returns: `PoolManager` or ``None``
+        :returns: `dict` or keyword arguments or ``None``
 
         """
         pass
 
     def before_send(self, request, *args, **kwargs):
-        """Triggered before calling `HTTPAdapter::send`. If a truthy value is
-        returned, :class:`MiddlewareHTTPAdapter <MiddlewareHTTPAdapter>` will
-        short-circuit the remaining middlewares and `HTTPAdapter::send`, using
-        the returned value instead.
+        """Called before `HTTPAdapter::send`. If a truthy value is returned,
+        :class:`MiddlewareHTTPAdapter <MiddlewareHTTPAdapter>` will short-
+        circuit the remaining middlewares and `HTTPAdapter::send`, using the
+        returned value instead.
 
         :param request: The :class:`PreparedRequest <PreparedRequest>` being
             sent.
@@ -106,8 +112,8 @@ class BaseMiddleware(object):
         pass
 
     def after_build_response(self, req, resp, response):
-        """Triggered after calling `HTTPAdapter::build_response`. Optionally
-        modify the returned `Response` object.
+        """Called after `HTTPAdapter::build_response`. Optionally modify the
+        returned `Response` object.
 
         :param req: The :class:`PreparedRequest <PreparedRequest>` used to
             generate the response.
