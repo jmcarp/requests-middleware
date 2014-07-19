@@ -59,11 +59,15 @@ class RequestPerTimeThrottler(BaseThrottler):
         self.visit_count += 1
 
 
+def per_hour_resetter(when):
+    now = datetime.datetime.utcnow()
+    return now > when and now.hour != when.hour
+
+
 class RequestsPerHourThrottler(RequestPerTimeThrottler):
 
     def __init__(self, count):
-        resetter = lambda when: datetime.datetime.utcnow().hour > when.hour
-        super(RequestsPerHourThrottler, self).__init__(count, resetter)
+        super(RequestsPerHourThrottler, self).__init__(count, per_hour_resetter)
 
 
 class ThrottleMiddleware(BaseMiddleware):
