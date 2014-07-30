@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-import httpretty
 import pytest_httpretty
 
 import requests
-import six.moves.http_client as httplib
 
 from requests_middleware.middleware import MiddlewareHTTPAdapter
+from .fixtures import cached_page, non_cached_page
 
 try:
-    from requests_middleware.contrib import cacheware
-    has_httpcache = True
+    from requests_middleware.contrib import cachecontrolware
+    has_cachecontrol = True
 except ImportError:
-    has_httpcache = False
+    has_cachecontrol = False
 
 pytestmark = pytest.mark.skipif(
-    not has_httpcache,
-    reason='httpcache is not installed; skipping caching tests.'
+    not has_cachecontrol,
+    reason='cachecontrol is not installed; skipping caching tests.'
 )
 
 
@@ -25,31 +24,11 @@ pytestmark = pytest.mark.skipif(
 def session():
     session = requests.Session()
     adapter = MiddlewareHTTPAdapter()
-    cache_middleware = cacheware.CacheMiddleware()
+    cache_middleware = cachecontrolware.CacheMiddleware()
     adapter.register(cache_middleware)
     session.mount('http://', adapter)
     session.mount('https://', adapter)
     return session
-
-
-@pytest.fixture
-def cached_page():
-    httpretty.register_uri(
-        httpretty.GET,
-        'http://test.com/cache',
-        responses=[
-            httpretty.Response(body='content'),
-            httpretty.Response(body='', status=httplib.NOT_MODIFIED),
-        ]
-    )
-
-@pytest.fixture
-def non_cached_page():
-    httpretty.register_uri(
-        httpretty.GET,
-        'http://test.com/cache',
-        body='content',
-    )
 
 
 # Integration tests
@@ -58,10 +37,13 @@ def non_cached_page():
 def test_cache_respect(session, cached_page):
     resp1 = session.get('http://test.com/cache')
     resp2 = session.get('http://test.com/cache')
-    assert resp1 is resp2
+    assert not getattr(resp1.raw, 'from_cache', False)
+    assert getattr(resp2.raw, 'from_cache', False)
+
 
 @pytest.mark.httpretty
 def test_cache_respect_no_cache(session, non_cached_page):
     resp1 = session.get('http://test.com/cache')
     resp2 = session.get('http://test.com/cache')
-    assert resp1 is not resp2
+    assert not getattr(resp1.raw, 'from_cache', False)
+    assert not getattr(resp2.raw, 'from_cache', False)

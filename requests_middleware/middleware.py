@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from requests import Response
 from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.response import HTTPResponse
 from requests.packages.urllib3.poolmanager import PoolManager
 
 
@@ -53,19 +55,24 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
         )
 
     def send(self, request, *args, **kwargs):
-        """Send the request. If any middleware in the stack returns a truthy
-        value from its `before_send` method, short-circuit and return that
-        value; else delegate to `HTTPAdapter::send`.
+        """Send the request. If any middleware in the stack returns a `Response`
+        or `HTTPResponse` value from its `before_send` method, short-circuit;
+        else delegate to `HTTPAdapter::send`.
 
         :param request: The :class:`PreparedRequest <PreparedRequest>`
             being sent.
-        :returns: The :class:`Response <Response>` object.
+        :return: The :class:`Response <Response>` object.
 
         """
         for middleware in self.middlewares:
             value = middleware.before_send(request, **kwargs)
-            if value:
+            if isinstance(value, Response):
                 return value
+            if isinstance(value, HTTPResponse):
+                return self.build_response(req, value)
+            if value:
+                raise ValueError('Middleware "before_send" methods must return '
+                                 'Response, HTTPResponse, or None')
         return super(MiddlewareHTTPAdapter, self).send(
             request, *args, **kwargs
         )
@@ -78,9 +85,11 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
         :param req: The :class:`PreparedRequest <PreparedRequest>` used to
             generate the response.
         :param resp: The urllib3 response object.
-        :returns: The :class:`Response <Response>` object.
+        :return: The :class:`Response <Response>` object.
 
         """
+        for middleware in self.middlewares:
+            req, resp = middleware.before_build_response(req, resp)
         response = super(MiddlewareHTTPAdapter, self).build_response(req, resp)
         for middleware in self.middlewares:
             response = middleware.after_build_response(req, resp, response)
@@ -93,7 +102,7 @@ class BaseMiddleware(object):
         """Called before `HTTPAdapter::init_poolmanager`. Optionally return a
         dictionary of keyword arguments to `PoolManager`.
 
-        :returns: `dict` or keyword arguments or ``None``
+        :return: `dict` of keyword arguments or ``None``
 
         """
         pass
@@ -104,22 +113,32 @@ class BaseMiddleware(object):
         circuit the remaining middlewares and `HTTPAdapter::send`, using the
         returned value instead.
 
-        :param request: The :class:`PreparedRequest <PreparedRequest>` being
-            sent.
-        :returns: The :class:`Response <Response>` object or ``None``.
+        :param request: The `PreparedRequest` used to generate the response.
+        :return: The `Response` object or ``None``.
 
         """
         pass
+
+    def before_build_response(self, req, resp):
+        """Called before `HTTPAdapter::build_response`. Optionally modify the
+        returned `PreparedRequest` and `HTTPResponse` objects.
+
+        :param req: The `PreparedRequest` used to generate the response.
+        :param resp: The urllib3 response object.
+        :return: Tuple of potentially modified (req, resp)
+
+        """
+        return req, resp
 
     def after_build_response(self, req, resp, response):
         """Called after `HTTPAdapter::build_response`. Optionally modify the
         returned `Response` object.
 
-        :param req: The :class:`PreparedRequest <PreparedRequest>` used to
-            generate the response.
+        :param req: The `PreparedRequest` used to generate the response.
         :param resp: The urllib3 response object.
-        :param response: The :class:`Response <Response>` object.
-        :returns: The potentially modified `Response` object.
+        :param response: The `Response` object.
+        :return: The potentially modified `Response` object.
 
         """
         return response
+

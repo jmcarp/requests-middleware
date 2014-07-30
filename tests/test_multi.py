@@ -62,4 +62,3 @@ def test_robots_and_ssl(session, robots_fixture, page_fixture):
     assert pool_kwargs.get('ssl_version') == ssl.PROTOCOL_TLSv1
     with pytest.raises(robotware.RobotsThrottledError):
         session.get('http://test.com/page')
-

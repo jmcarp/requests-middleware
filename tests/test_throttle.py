@@ -12,6 +12,7 @@ from requests_middleware.middleware import MiddlewareHTTPAdapter
 from requests_middleware.contrib import throttleware
 
 from . import utils
+from .fixtures import page_fixture
 
 
 @pytest.fixture
@@ -43,14 +44,6 @@ throttle_delay_session = make_session_fixture(
 throttle_per_hour_session = make_session_fixture(
     throttleware.RequestsPerHourThrottler(5)
 )
-
-@pytest.fixture
-def page_fixture():
-    httpretty.register_uri(
-        httpretty.GET,
-        'http://test.com/page',
-        body='content',
-    )
 
 
 # Unit tests

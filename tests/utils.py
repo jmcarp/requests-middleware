@@ -2,9 +2,7 @@
 
 import six
 import mock
-import pytest
 import datetime
-import httpretty
 
 
 def mock_datetime(monkeypatch, **kwargs):
@@ -13,12 +11,3 @@ def mock_datetime(monkeypatch, **kwargs):
         method = getattr(fake, key)
         method.return_value = value
     monkeypatch.setattr(datetime, 'datetime', fake)
-
-
-@pytest.fixture
-def page_fixture():
-    httpretty.register_uri(
-        httpretty.GET,
-        'http://test.com/page',
-        body='content',
-    )

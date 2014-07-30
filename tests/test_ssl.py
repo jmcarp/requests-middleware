@@ -9,7 +9,7 @@ import requests
 from requests_middleware.middleware import MiddlewareHTTPAdapter
 from requests_middleware.contrib import sslware
 
-from .utils import page_fixture
+from .fixtures import page_fixture
 
 
 @pytest.fixture
