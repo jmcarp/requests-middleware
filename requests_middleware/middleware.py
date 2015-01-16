@@ -69,7 +69,7 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
             if isinstance(value, Response):
                 return value
             if isinstance(value, HTTPResponse):
-                return self.build_response(req, value)
+                return self.build_response(request, value)
             if value:
                 raise ValueError('Middleware "before_send" methods must return '
                                  'Response, HTTPResponse, or None')
