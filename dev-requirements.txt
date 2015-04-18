@@ -4,3 +4,4 @@ mock
 pytest
 httpretty
 pytest_httpretty
+flake8

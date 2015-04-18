@@ -4,7 +4,7 @@ from requests_middleware import BaseMiddleware
 
 
 class SourceMiddleware(BaseMiddleware):
-    
+
     def __init__(self, address, port):
         self.address = address
         self.port = port

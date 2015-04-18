@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import six.moves.http_client as httplib
 from httpcache.cache import HTTPCache
+import six.moves.http_client as httplib
+
 from requests_middleware import BaseMiddleware
 
 
@@ -28,4 +29,3 @@ class CacheMiddleware(BaseMiddleware):
         else:
             self.cache.store(response)
         return response
-

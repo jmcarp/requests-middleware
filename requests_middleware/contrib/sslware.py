@@ -4,7 +4,7 @@ from requests_middleware import BaseMiddleware
 
 
 class SSLMiddleware(BaseMiddleware):
-    
+
     def __init__(self, ssl_version):
         self.ssl_version = ssl_version
 

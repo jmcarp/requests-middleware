@@ -25,7 +25,6 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
         """Add a middleware to the middleware stack.
 
         :param BaseMiddleware middleware: The middleware object
-
         """
         self.middlewares.append(middleware)
 
@@ -36,7 +35,6 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
         precedence. Note: Arguments are passed directly to `PoolManager` and
         not to the superclass `init_poolmanager` because the superclass method
         does not currently accept **kwargs.
-
         """
         kwargs = {}
         for middleware in self.middlewares[::-1]:
@@ -61,8 +59,7 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
 
         :param request: The :class:`PreparedRequest <PreparedRequest>`
             being sent.
-        :return: The :class:`Response <Response>` object.
-
+        :returns: The :class:`Response <Response>` object.
         """
         for middleware in self.middlewares:
             value = middleware.before_send(request, **kwargs)
@@ -72,7 +69,7 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
                 return self.build_response(request, value)
             if value:
                 raise ValueError('Middleware "before_send" methods must return '
-                                 'Response, HTTPResponse, or None')
+                                 '`Response`, `HTTPResponse`, or `None`')
         return super(MiddlewareHTTPAdapter, self).send(
             request, *args, **kwargs
         )
@@ -85,8 +82,7 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
         :param req: The :class:`PreparedRequest <PreparedRequest>` used to
             generate the response.
         :param resp: The urllib3 response object.
-        :return: The :class:`Response <Response>` object.
-
+        :returns: The :class:`Response <Response>` object.
         """
         for middleware in self.middlewares:
             req, resp = middleware.before_build_response(req, resp)
@@ -102,8 +98,7 @@ class BaseMiddleware(object):
         """Called before `HTTPAdapter::init_poolmanager`. Optionally return a
         dictionary of keyword arguments to `PoolManager`.
 
-        :return: `dict` of keyword arguments or ``None``
-
+        :returns: `dict` of keyword arguments or `None`
         """
         pass
 
@@ -114,8 +109,7 @@ class BaseMiddleware(object):
         returned value instead.
 
         :param request: The `PreparedRequest` used to generate the response.
-        :return: The `Response` object or ``None``.
-
+        :returns: The `Response` object or `None`.
         """
         pass
 
@@ -125,8 +119,7 @@ class BaseMiddleware(object):
 
         :param req: The `PreparedRequest` used to generate the response.
         :param resp: The urllib3 response object.
-        :return: Tuple of potentially modified (req, resp)
-
+        :returns: Tuple of potentially modified (req, resp)
         """
         return req, resp
 
@@ -137,8 +130,6 @@ class BaseMiddleware(object):
         :param req: The `PreparedRequest` used to generate the response.
         :param resp: The urllib3 response object.
         :param response: The `Response` object.
-        :return: The potentially modified `Response` object.
-
+        :returns: The potentially modified `Response` object.
         """
         return response
-
