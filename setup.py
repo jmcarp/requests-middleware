@@ -10,7 +10,7 @@ from setuptools.command.test import test as TestCommand
 TEST_REQUIRES = [
     'six',
     'pytest',
-    'httpretty',
+    'httpretty==0.8.6',
     'pytest_httpretty',
 ]
 
