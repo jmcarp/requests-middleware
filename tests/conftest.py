@@ -19,7 +19,10 @@ def cached_page():
         httpretty.GET,
         'http://test.com/cache',
         responses=[
-            httpretty.Response(body='content', adding_headers={'ETag': 'daad3c79aab24f90a7e47742e4ed3581'}),
+            httpretty.Response(
+                body='content',
+                adding_headers={'ETag': 'daad3c79aab24f90a7e47742e4ed3581'},
+            ),
             httpretty.Response(body='', status=httplib.NOT_MODIFIED),
         ]
     )

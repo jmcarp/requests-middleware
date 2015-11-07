@@ -9,6 +9,6 @@ install:
   - travis_retry pip install -r dev-requirements.txt
   - travis_retry pip install -r contrib-requirements.txt
 
-before_script: flake8 requests_middleware
+before_script: flake8 .
 
 script: py.test --tb short

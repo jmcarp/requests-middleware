@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-import pytest_httpretty
 
 import ssl
 import requests
 
 from requests_middleware.middleware import MiddlewareHTTPAdapter
 from requests_middleware.contrib import sslware
-
-from .fixtures import page_fixture
 
 
 @pytest.fixture

@@ -2,7 +2,6 @@
 
 import pytest
 import httpretty
-import pytest_httpretty
 
 import time
 import datetime
@@ -144,4 +143,3 @@ def test_delay(session, robots_fixture, plain_fixture, monkeypatch):
     now = datetime.datetime.utcnow() + relativedelta(seconds=5)
     utils.mock_datetime(monkeypatch, utcnow=now)
     session.get('http://test.com/plain')
-

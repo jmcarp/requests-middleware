@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-import httpretty
-import pytest_httpretty
 
 import datetime
 import requests
@@ -12,7 +10,6 @@ from requests_middleware.middleware import MiddlewareHTTPAdapter
 from requests_middleware.contrib import throttleware
 
 from . import utils
-from .fixtures import page_fixture
 
 
 @pytest.fixture
@@ -92,4 +89,3 @@ def test_throttle_per_hour_integration(throttle_per_hour_session, page_fixture,
     now = datetime.datetime.utcnow() + relativedelta(hours=2)
     utils.mock_datetime(monkeypatch, utcnow=now)
     throttle_per_hour_session.get('http://test.com/page')
-

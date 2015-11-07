@@ -2,7 +2,6 @@
 
 import pytest
 import httpretty
-import pytest_httpretty
 
 import ssl
 import requests

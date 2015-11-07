@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-import pytest_httpretty
 
 import requests
 
 from requests_middleware.middleware import MiddlewareHTTPAdapter
-from .fixtures import cached_page, non_cached_page
 
 try:
     from requests_middleware.contrib import cachecontrolware
