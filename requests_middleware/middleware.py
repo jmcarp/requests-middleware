@@ -77,17 +77,17 @@ class MiddlewareHTTPAdapter(HTTPAdapter):
     def build_response(self, req, resp):
         """Build the response. Call `HTTPAdapter::build_response`, then pass
         the response object to the `after_build_response` method of each
-        middleware in the stack.
+        middleware in the stack, in reverse order.
 
         :param req: The :class:`PreparedRequest <PreparedRequest>` used to
             generate the response.
         :param resp: The urllib3 response object.
         :returns: The :class:`Response <Response>` object.
         """
-        for middleware in self.middlewares:
+        for middleware in reversed(self.middlewares):
             req, resp = middleware.before_build_response(req, resp)
         response = super(MiddlewareHTTPAdapter, self).build_response(req, resp)
-        for middleware in self.middlewares:
+        for middleware in reversed(self.middlewares):
             response = middleware.after_build_response(req, resp, response)
         return response
 
